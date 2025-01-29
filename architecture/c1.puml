@@ -1,0 +1,16 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User")
+
+System_Boundary(sb, "Social Network") {
+    Container(users, "Users", "Software system", "Система управления профилями пользователей (регистрация, обновление, удаление, etc.) Организация чатов. Управление нотификациями")
+    Container(content, "Content management", "Software system", "Система управления пользовательским контентом: посты, лайки, комментарии. Поиск контента, работа с лентой и пользовательская аналитика")
+}
+
+Container_Ext(cdn, "CDN", "Доставка статического контента")
+
+Rel(cdn, user, "Статика")
+Rel(user, users, "Управление профилем, сообщениями. Получение нотификаций")
+Rel(user, content, "Просмотр ленты, создание и просмотр постов. Получение аналитики")
+@enduml
