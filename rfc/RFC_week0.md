@@ -39,5 +39,13 @@ RPS Запись
 </p>
 
 <p align="center">
-  <img src="images/diagrams/context.svg" />
+  <img src="../architecture/images/c1.svg" />
+</p>
+
+<p align="center">
+    <b>Level С2.</b> Container diagram
+</p>
+
+<p align="center">
+  <img src="../architecture/images/c2.svg" />
 </p>

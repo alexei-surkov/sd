@@ -1,0 +1,47 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!define DEVICONS https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons
+!include DEVICONS/java.puml
+
+Person(user, "User")
+
+System_Boundary(sb, "Social Network") {
+    Container(users, "Users", "Software system", "Система управления профилями пользователей (регистрация, обновление, удаление, etc.) Организация чатов. Управление нотификациями")
+    Container_Boundary(cb, "Content container") {
+        Container(lb, "Load Balancer", "Container: F5", "Осуществляет распределение пользовательских запросов")
+        Container(spa, "Single-Page Web App", "Container: TypeScript, React", "Обеспечивает удобный интерфейс для выполнения пользовательских сценариев")
+        Container(posts, "Posts", "container: Java", "Backend. Мастер-система, управляющая жизненным циклом постов, комментариев и лайков (CRUD)", $sprite="java")
+        Container(feed, "Feed", "container: Java", "Формирование ленты пользователя, ранжирование результатов", $sprite="java")
+        Container(mobile, "Mobile App", "container: Swift", "Мобильное приложение для выполнения пользовательских сценариев")
+        Container(api, "Api Gateway", "container: Java", "Осуществляет маршрутизацию пользовательских запросов по бэк-энд контейнерам", $sprite="java")
+        Container(bi, "Analytics", "container: Java", "Осуществляет маршрутизацию пользовательских запросов по бэк-энд контейнерам", $sprite="java")
+        ContainerDb(postsdb, "Database", "PostgreSQL", "Хранение пользовательских постов")
+        ContainerDb(feeddb, "Database", "PostgreSQL [Slave]", "Данные пользовательской ленты. Чтение")
+        ContainerDb(bidb, "Database", "PostgreSQL", "Хранение данных для формирования пользовательской аналитики")
+        ContainerDb(feeddbwrite, "Database", "PostgreSQL [Master]", "Данные для пользовательской ленты")
+    }
+    ContainerQueue(mq, "Message oriented middleware", "Kafka", "Кластер для обмена сообщениями внутри системы")
+}
+
+Container_Ext(cdn, "CDN", "Доставка статического контента")
+
+Rel(cdn, user, "Статика")
+Rel(user, users, "Управление профилем, сообщениями. Получение нотификаций")
+BiRel(users, mq, "Асинхронный обмен сообщениями")
+BiRel(posts, postsdb, "Чтение/запись")
+Rel_U(feeddb, feed, "Чтение")
+Rel(feed, feeddbwrite, "Запись")
+BiRel(bi, bidb, "Чтение/Запись")
+Rel(feeddbwrite, feeddb, Sync)
+BiRel(spa, lb, "HTTPS")
+BiRel(mobile, lb, "HTTPS")
+BiRel(lb, api, "HTTPS")
+BiRel(api, feed, "HTTPS")
+BiRel(api, posts, "HTTPS")
+BiRel(api, bi, "HTTPS")
+Rel(posts, mq, "Запись событий")
+Rel(mq, feed, "Чтение событий, актуализация ленты")
+Rel(mq, bi, "Чтение событий, актуализация аналитики")
+Rel(user, mobile, "Просмотр ленты, создание и просмотр постов. Получение аналитики")
+Rel(user, spa, "Просмотр ленты, создание и просмотр постов. Получение аналитики")
+@enduml
